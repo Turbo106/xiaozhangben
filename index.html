@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1f6feb">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>小账本 · 待办</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --card:#fff; --text:#1a1d21; --muted:#8a9199;
+    --line:#e8eaed; --accent:#1f6feb; --danger:#e5484d; --ok:#2ea043;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#0f1115; --card:#171a20; --text:#e6e8eb; --muted:#8b939c;
+           --line:#252a32; --accent:#4b8bf5; --danger:#ff6b6b; --ok:#3fb950; }
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+  body{padding:calc(env(safe-area-inset-top) + 12px) 12px calc(env(safe-area-inset-bottom) + 80px);max-width:680px;margin:0 auto}
+  h1{font-size:19px;margin:4px 0 14px;font-weight:650;letter-spacing:.3px}
+  .tabs{display:flex;gap:8px;margin-bottom:14px}
+  .tab{flex:1;padding:11px;text-align:center;border-radius:11px;background:var(--card);
+    border:1px solid var(--line);font-size:15px;cursor:pointer;transition:.15s}
+  .tab.on{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+  .row{display:flex;gap:8px;align-items:center}
+  input,select,button{font:inherit;color:inherit}
+  input[type=number],input[type=text],input[type=date],select{
+    flex:1;min-width:0;padding:12px;border-radius:10px;border:1px solid var(--line);
+    background:var(--bg);outline:none}
+  input:focus,select:focus{border-color:var(--accent)}
+  button{border:none;border-radius:10px;padding:12px 16px;background:var(--accent);color:#fff;
+    font-weight:600;cursor:pointer;white-space:nowrap}
+  button.ghost{background:transparent;color:var(--muted);border:1px solid var(--line);font-weight:500}
+  .cats{display:flex;gap:8px;overflow-x:auto;padding:10px 0 2px;scrollbar-width:none}
+  .cats::-webkit-scrollbar{display:none}
+  .cat{padding:9px 14px;border-radius:20px;border:1px solid var(--line);background:transparent;
+    font-size:14px;white-space:nowrap;cursor:pointer}
+  .cat.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .sum{display:flex;gap:10px;margin-bottom:12px}
+  .sum .card{flex:1;margin:0;padding:12px}
+  .sum .k{font-size:12px;color:var(--muted);margin-bottom:4px}
+  .sum .v{font-size:20px;font-weight:680;font-variant-numeric:tabular-nums}
+  ul{list-style:none;margin:0;padding:0}
+  li{display:flex;align-items:center;gap:10px;padding:13px 2px;border-bottom:1px solid var(--line)}
+  li:last-child{border-bottom:none}
+  .li-main{flex:1;min-width:0}
+  .li-t{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .li-s{font-size:12px;color:var(--muted);margin-top:3px}
+  .amt{font-weight:650;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .amt.out{color:var(--danger)}
+  .del{background:transparent;border:none;color:var(--muted);font-size:19px;padding:6px 8px;cursor:pointer}
+  .del:active{color:var(--danger)}
+  .empty{text-align:center;color:var(--muted);padding:26px 0;font-size:14px}
+  .chk{width:22px;height:22px;border-radius:7px;border:2px solid var(--line);flex:none;
+    display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .chk.on{background:var(--ok);border-color:var(--ok);color:#fff;font-size:14px}
+  .done .li-t{text-decoration:line-through;color:var(--muted)}
+  .bar{position:fixed;left:0;right:0;bottom:0;padding:10px 12px calc(env(safe-area-inset-bottom) + 10px);
+    background:linear-gradient(to top,var(--bg) 60%,transparent);display:flex;gap:8px;max-width:680px;margin:0 auto}
+  .bar button{flex:1;background:var(--card);color:var(--muted);border:1px solid var(--line);font-weight:500;font-size:13px}
+  .hide{display:none}
+</style>
+</head>
+<body>
+<h1>小账本 · 待办</h1>
+
+<div class="tabs">
+  <div class="tab on" data-tab="acct">记账</div>
+  <div class="tab" data-tab="todo">待办</div>
+</div>
+
+<!-- ================= 记账 ================= -->
+<section id="acct">
+  <div class="sum">
+    <div class="card"><div class="k">今日支出</div><div class="v" id="sumDay">¥0</div></div>
+    <div class="card"><div class="k">本月支出</div><div class="v" id="sumMon">¥0</div></div>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <input type="number" id="amt" inputmode="decimal" placeholder="金额" step="0.01" min="0">
+      <button onclick="addAcct()">记一笔</button>
+    </div>
+    <div class="cats" id="cats"></div>
+    <div class="row" style="margin-top:10px">
+      <input type="text" id="note" placeholder="备注（可选）">
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="font-size:13px;color:var(--muted);margin-bottom:6px">明细</div>
+    <ul id="acctList"></ul>
+  </div>
+</section>
+
+<!-- ================= 待办 ================= -->
+<section id="todo" class="hide">
+  <div class="card">
+    <div class="row">
+      <input type="text" id="task" placeholder="加个待办…">
+      <button onclick="addTodo()">添加</button>
+    </div>
+  </div>
+  <div class="card">
+    <div style="font-size:13px;color:var(--muted);margin-bottom:6px">进行中</div>
+    <ul id="todoList"></ul>
+  </div>
+  <div class="card">
+    <div style="font-size:13px;color:var(--muted);margin-bottom:6px">已完成</div>
+    <ul id="doneList"></ul>
+  </div>
+</section>
+
+<div class="bar">
+  <button onclick="exportData()">导出备份</button>
+  <button onclick="importData()">导入备份</button>
+</div>
+
+<script>
+const CATS = ['餐饮','交通','购物','学习','音乐','娱乐','其他'];
+let cat = '餐饮';
+
+const store = {
+  get(k, d){ try { return JSON.parse(localStorage.getItem(k)) ?? d } catch(e){ return d } },
+  set(k, v){ localStorage.setItem(k, JSON.stringify(v)) }
+};
+let acct = store.get('acct', []);
+let todos = store.get('todos', []);
+
+const today = () => new Date().toISOString().slice(0,10);
+const money = n => '¥' + (Math.round(n*100)/100).toLocaleString('zh-CN');
+
+/* ---------- 记账 ---------- */
+function initCats(){
+  const box = document.getElementById('cats');
+  box.innerHTML = CATS.map(c =>
+    `<div class="cat ${c===cat?'on':''}" onclick="pickCat('${c}')">${c}</div>`).join('');
+}
+function pickCat(c){ cat = c; initCats(); }
+
+function addAcct(){
+  const amt = parseFloat(document.getElementById('amt').value);
+  if (!(amt > 0)) { document.getElementById('amt').focus(); return; }
+  acct.unshift({ id: Date.now(), amount: +amt.toFixed(2), cat,
+                 note: document.getElementById('note').value.trim(),
+                 date: today() });
+  store.set('acct', acct);
+  document.getElementById('amt').value = '';
+  document.getElementById('note').value = '';
+  renderAcct();
+}
+
+function delAcct(id){
+  if (!confirm('删除这条记录？')) return;
+  acct = acct.filter(a => a.id !== id); store.set('acct', acct); renderAcct();
+}
+
+function renderAcct(){
+  const d0 = today(), m0 = d0.slice(0,7);
+  const daySum = acct.filter(a => a.date === d0).reduce((s,a) => s + a.amount, 0);
+  const monSum = acct.filter(a => a.date.startsWith(m0)).reduce((s,a) => s + a.amount, 0);
+  document.getElementById('sumDay').textContent = money(daySum);
+  document.getElementById('sumMon').textContent = money(monSum);
+
+  const el = document.getElementById('acctList');
+  if (!acct.length){ el.innerHTML = '<div class="empty">还没有记录</div>'; return; }
+  el.innerHTML = acct.slice(0, 100).map(a => `
+    <li>
+      <div class="li-main">
+        <div class="li-t">${a.cat}${a.note ? ' · ' + esc(a.note) : ''}</div>
+        <div class="li-s">${a.date}</div>
+      </div>
+      <div class="amt out">-${money(a.amount)}</div>
+      <button class="del" onclick="delAcct(${a.id})">×</button>
+    </li>`).join('');
+}
+
+/* ---------- 待办 ---------- */
+function addTodo(){
+  const v = document.getElementById('task').value.trim();
+  if (!v) return;
+  todos.unshift({ id: Date.now(), text: v, done: false, ts: Date.now() });
+  store.set('todos', todos);
+  document.getElementById('task').value = '';
+  renderTodo();
+}
+function toggleTodo(id){
+  const t = todos.find(x => x.id === id); if (!t) return;
+  t.done = !t.done; store.set('todos', todos); renderTodo();
+}
+function delTodo(id){
+  todos = todos.filter(x => x.id !== id); store.set('todos', todos); renderTodo();
+}
+function renderTodo(){
+  const open = todos.filter(t => !t.done), done = todos.filter(t => t.done);
+  const item = t => `
+    <li class="${t.done?'done':''}">
+      <div class="chk ${t.done?'on':''}" onclick="toggleTodo(${t.id})">${t.done?'✓':''}</div>
+      <div class="li-main"><div class="li-t">${esc(t.text)}</div></div>
+      <button class="del" onclick="delTodo(${t.id})">×</button>
+    </li>`;
+  document.getElementById('todoList').innerHTML =
+    open.length ? open.map(item).join('') : '<div class="empty">没有进行中的事</div>';
+  document.getElementById('doneList').innerHTML =
+    done.length ? done.map(item).join('') : '<div class="empty">还没有完成的</div>';
+}
+
+/* ---------- 工具 ---------- */
+function esc(s){ return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])) }
+
+function exportData(){
+  const blob = new Blob([JSON.stringify({acct, todos, at: Date.now()}, null, 1)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'backup-' + today() + '.json';
+  a.click();
+}
+function importData(){
+  const i = document.createElement('input'); i.type = 'file'; i.accept = '.json';
+  i.onchange = () => {
+    const f = i.files[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = () => {
+      try {
+        const d = JSON.parse(r.result);
+        if (Array.isArray(d.acct)) acct = d.acct;
+        if (Array.isArray(d.todos)) todos = d.todos;
+        store.set('acct', acct); store.set('todos', todos);
+        renderAcct(); renderTodo(); alert('导入成功');
+      } catch(e){ alert('文件格式不对'); }
+    };
+    r.readAsText(f);
+  };
+  i.click();
+}
+
+/* ---------- 初始化 ---------- */
+document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === t));
+  document.getElementById('acct').classList.toggle('hide', t.dataset.tab !== 'acct');
+  document.getElementById('todo').classList.toggle('hide', t.dataset.tab !== 'todo');
+});
+document.getElementById('amt').addEventListener('keydown', e => { if (e.key === 'Enter') addAcct() });
+document.getElementById('task').addEventListener('keydown', e => { if (e.key === 'Enter') addTodo() });
+
+initCats(); renderAcct(); renderTodo();
+</script>
+</body>
+</html>
