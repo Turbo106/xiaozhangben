@@ -11,6 +11,9 @@
   :root{
     --bg:#f6f7f9; --card:#fff; --text:#1a1d21; --muted:#8a9199;
     --line:#e8eaed; --accent:#1f6feb; --danger:#e5484d; --ok:#2ea043;
+    --ease:cubic-bezier(.22,.68,0,1);
+    --spring:cubic-bezier(.34,1.56,.64,1);
+    --dir:1;
   }
   @media (prefers-color-scheme: dark){
     :root{ --bg:#0f1115; --card:#171a20; --text:#e6e8eb; --muted:#8b939c;
@@ -19,62 +22,129 @@
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
   html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
-  body{padding:calc(env(safe-area-inset-top) + 12px) 12px calc(env(safe-area-inset-bottom) + 80px);max-width:680px;margin:0 auto}
-  h1{font-size:19px;margin:4px 0 14px;font-weight:650;letter-spacing:.3px}
+  body{padding:calc(env(safe-area-inset-top) + 12px) 12px calc(env(safe-area-inset-bottom) + 80px);
+    max-width:680px;margin:0 auto;overflow-x:hidden}
+
+  h1{font-size:19px;margin:4px 0 14px;font-weight:650;letter-spacing:.3px;display:flex;flex-wrap:wrap}
+  h1 span{display:inline-block;opacity:0;transform:translateY(9px) rotateX(-40deg);
+    animation:charIn .5s var(--ease) forwards}
+  @keyframes charIn{to{opacity:1;transform:none}}
+
   .tabs{display:flex;gap:8px;margin-bottom:14px}
   .tab{flex:1;padding:11px;text-align:center;border-radius:11px;background:var(--card);
-    border:1px solid var(--line);font-size:15px;cursor:pointer;transition:.15s}
+    border:1px solid var(--line);font-size:15px;cursor:pointer;position:relative;overflow:hidden;
+    transition:background .28s var(--ease), color .28s var(--ease),
+               border-color .28s var(--ease), transform .3s var(--spring)}
   .tab.on{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+  .tab:active{transform:scale(.96)}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;
+    margin-bottom:12px;transition:transform .3s var(--spring), box-shadow .3s var(--ease)}
+  .card.lift{transform:translateY(-2px);box-shadow:0 8px 22px rgba(0,0,0,.08)}
+
   .row{display:flex;gap:8px;align-items:center}
   input,select,button{font:inherit;color:inherit}
-  input[type=number],input[type=text],input[type=date],select{
-    flex:1;min-width:0;padding:12px;border-radius:10px;border:1px solid var(--line);
-    background:var(--bg);outline:none}
-  input:focus,select:focus{border-color:var(--accent)}
+
+  .field{flex:1;min-width:0;position:relative}
+  .field::after{content:"";position:absolute;left:10px;right:10px;bottom:8px;height:2px;
+    background:var(--accent);transform:scaleX(0);transform-origin:left;
+    transition:transform .35s var(--ease);border-radius:2px}
+  .field:focus-within::after{transform:scaleX(1)}
+  input[type=number],input[type=text]{width:100%;padding:12px;border-radius:10px;
+    border:1px solid var(--line);background:var(--bg);outline:none;
+    transition:border-color .25s var(--ease), background .25s var(--ease)}
+  input:focus{border-color:var(--accent)}
+  input::placeholder{color:var(--muted);transition:opacity .2s}
+  input:focus::placeholder{opacity:.45}
+
   button{border:none;border-radius:10px;padding:12px 16px;background:var(--accent);color:#fff;
-    font-weight:600;cursor:pointer;white-space:nowrap}
+    font-weight:600;cursor:pointer;white-space:nowrap;position:relative;overflow:hidden;
+    transition:transform .25s var(--spring)}
+  button:active{transform:scale(.94)}
+  .ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.55);
+    transform:scale(0);animation:rip .55s ease-out forwards;pointer-events:none}
+  @keyframes rip{to{transform:scale(2.6);opacity:0}}
   button.ghost{background:transparent;color:var(--muted);border:1px solid var(--line);font-weight:500}
+
   .cats{display:flex;gap:8px;overflow-x:auto;padding:10px 0 2px;scrollbar-width:none}
   .cats::-webkit-scrollbar{display:none}
   .cat{padding:9px 14px;border-radius:20px;border:1px solid var(--line);background:transparent;
-    font-size:14px;white-space:nowrap;cursor:pointer}
-  .cat.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+    font-size:14px;white-space:nowrap;cursor:pointer;
+    transition:background .25s var(--ease), color .25s var(--ease),
+               border-color .25s var(--ease), transform .32s var(--spring)}
+  .cat.on{background:var(--accent);color:#fff;border-color:var(--accent);transform:scale(1.06)}
+  .cat:active{transform:scale(.94)}
+
   .sum{display:flex;gap:10px;margin-bottom:12px}
   .sum .card{flex:1;margin:0;padding:12px}
   .sum .k{font-size:12px;color:var(--muted);margin-bottom:4px}
   .sum .v{font-size:20px;font-weight:680;font-variant-numeric:tabular-nums}
+  .sum .v.flash{animation:flashIn .45s var(--spring)}
+  @keyframes flashIn{40%{transform:scale(1.09);color:var(--accent)}}
+
   ul{list-style:none;margin:0;padding:0}
-  li{display:flex;align-items:center;gap:10px;padding:13px 2px;border-bottom:1px solid var(--line)}
+  li{display:flex;align-items:center;gap:10px;padding:13px 2px;
+    border-bottom:1px solid var(--line);overflow:hidden;
+    transition:opacity .22s var(--ease), transform .28s var(--ease),
+               max-height .3s var(--ease), padding .3s var(--ease), border-color .3s}
   li:last-child{border-bottom:none}
+  li.in{opacity:1;transform:none}
+  li.pre{opacity:0;transform:translateY(10px) scale(.985)}
+  li.out{opacity:0;transform:translateX(22px) scale(.97);max-height:0;padding-top:0;
+    padding-bottom:0;border-color:transparent}
+
   .li-main{flex:1;min-width:0}
-  .li-t{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .li-t{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    background-image:linear-gradient(currentColor,currentColor);
+    background-repeat:no-repeat;background-size:0% 1.5px;background-position:0 58%;
+    transition:background-size .34s var(--ease), color .3s var(--ease)}
   .li-s{font-size:12px;color:var(--muted);margin-top:3px}
   .amt{font-weight:650;font-variant-numeric:tabular-nums;white-space:nowrap}
   .amt.out{color:var(--danger)}
-  .del{background:transparent;border:none;color:var(--muted);font-size:19px;padding:6px 8px;cursor:pointer}
-  .del:active{color:var(--danger)}
-  .empty{text-align:center;color:var(--muted);padding:26px 0;font-size:14px}
+
+  .del{background:transparent;border:none;color:var(--muted);font-size:19px;padding:6px 8px;
+    cursor:pointer;border-radius:8px;
+    transition:color .2s, background .2s, transform .25s var(--spring)}
+  .del:active{color:var(--danger);background:rgba(229,72,77,.1);transform:scale(.88)}
+
+  .empty{text-align:center;color:var(--muted);padding:26px 0;font-size:14px;
+    animation:fadeUp .4s var(--ease) both}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
   .chk{width:22px;height:22px;border-radius:7px;border:2px solid var(--line);flex:none;
-    display:flex;align-items:center;justify-content:center;cursor:pointer}
-  .chk.on{background:var(--ok);border-color:var(--ok);color:#fff;font-size:14px}
-  .done .li-t{text-decoration:line-through;color:var(--muted)}
+    display:flex;align-items:center;justify-content:center;cursor:pointer;
+    transition:background .25s var(--ease), border-color .25s var(--ease), transform .3s var(--spring)}
+  .chk.on{background:var(--ok);border-color:var(--ok);color:#fff;font-size:14px;
+    animation:pop .4s var(--spring)}
+  @keyframes pop{45%{transform:scale(1.28)}}
+  .done .li-t{color:var(--muted);background-size:100% 1.5px}
+
   .bar{position:fixed;left:0;right:0;bottom:0;padding:10px 12px calc(env(safe-area-inset-bottom) + 10px);
-    background:linear-gradient(to top,var(--bg) 60%,transparent);display:flex;gap:8px;max-width:680px;margin:0 auto}
-  .bar button{flex:1;background:var(--card);color:var(--muted);border:1px solid var(--line);font-weight:500;font-size:13px}
+    background:linear-gradient(to top,var(--bg) 60%,transparent);display:flex;gap:8px;
+    max-width:680px;margin:0 auto}
+  .bar button{flex:1;background:var(--card);color:var(--muted);border:1px solid var(--line);
+    font-weight:500;font-size:13px}
+
+  .view{transition:opacity .2s var(--ease), transform .3s var(--ease)}
+  .view.leave{opacity:0;transform:translateX(calc(var(--dir) * -22px)) scale(.99)}
+  .view.enter{opacity:0;transform:translateX(calc(var(--dir) * 22px)) scale(.99)}
   .hide{display:none}
+
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}
+    h1 span{opacity:1;transform:none}
+  }
 </style>
 </head>
 <body>
-<h1>小账本 · 待办</h1>
+<h1 id="title">小账本 · 待办</h1>
 
 <div class="tabs">
   <div class="tab on" data-tab="acct">记账</div>
   <div class="tab" data-tab="todo">待办</div>
 </div>
 
-<!-- ================= 记账 ================= -->
-<section id="acct">
+<section id="acct" class="view">
   <div class="sum">
     <div class="card"><div class="k">今日支出</div><div class="v" id="sumDay">¥0</div></div>
     <div class="card"><div class="k">本月支出</div><div class="v" id="sumMon">¥0</div></div>
@@ -82,12 +152,12 @@
 
   <div class="card">
     <div class="row">
-      <input type="number" id="amt" inputmode="decimal" placeholder="金额" step="0.01" min="0">
+      <div class="field"><input type="number" id="amt" inputmode="decimal" placeholder="金额" step="0.01" min="0"></div>
       <button onclick="addAcct()">记一笔</button>
     </div>
     <div class="cats" id="cats"></div>
     <div class="row" style="margin-top:10px">
-      <input type="text" id="note" placeholder="备注（可选）">
+      <div class="field"><input type="text" id="note" placeholder="备注（可选）"></div>
     </div>
   </div>
 
@@ -97,11 +167,10 @@
   </div>
 </section>
 
-<!-- ================= 待办 ================= -->
-<section id="todo" class="hide">
+<section id="todo" class="view hide">
   <div class="card">
     <div class="row">
-      <input type="text" id="task" placeholder="加个待办…">
+      <div class="field"><input type="text" id="task" placeholder="加个待办…"></div>
       <button onclick="addTodo()">添加</button>
     </div>
   </div>
@@ -123,6 +192,7 @@
 <script>
 const CATS = ['餐饮','交通','购物','学习','音乐','娱乐','其他'];
 let cat = '餐饮';
+let cur = 'acct';
 
 const store = {
   get(k, d){ try { return JSON.parse(localStorage.getItem(k)) ?? d } catch(e){ return d } },
@@ -134,37 +204,89 @@ let todos = store.get('todos', []);
 const today = () => new Date().toISOString().slice(0,10);
 const money = n => '¥' + (Math.round(n*100)/100).toLocaleString('zh-CN');
 
+(function animTitle(){
+  const t = document.getElementById('title');
+  const txt = t.textContent; t.textContent = '';
+  [...txt].forEach((ch, i) => {
+    const s = document.createElement('span');
+    s.textContent = ch === ' ' ? '\u00a0' : ch;
+    s.style.animationDelay = (i * 42) + 'ms';
+    t.appendChild(s);
+  });
+})();
+
+document.addEventListener('pointerdown', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const r = document.createElement('span'); r.className = 'ripple';
+  const rect = b.getBoundingClientRect(), d = Math.max(rect.width, rect.height);
+  r.style.width = r.style.height = d + 'px';
+  r.style.left = (e.clientX - rect.left - d/2) + 'px';
+  r.style.top = (e.clientY - rect.top - d/2) + 'px';
+  b.appendChild(r); setTimeout(() => r.remove(), 600);
+});
+
+function tween(el, to){
+  const from = parseFloat(el.dataset.v || 0);
+  el.dataset.v = to;
+  if (from === to) { el.textContent = money(to); return; }
+  const t0 = performance.now(), dur = 420;
+  el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+  (function step(t){
+    const p = Math.min(1, (t - t0)/dur), e = 1 - Math.pow(1 - p, 3);
+    el.textContent = money(from + (to - from) * e);
+    if (p < 1) requestAnimationFrame(step);
+  })(t0);
+}
+
+function animateIn(ul){
+  [...ul.children].forEach((li, i) => {
+    if (li.dataset.anim) return;
+    li.dataset.anim = '1';
+    li.classList.add('pre');
+    setTimeout(() => { li.classList.remove('pre'); li.classList.add('in'); }, 18 * i + 10);
+  });
+}
+
 /* ---------- 记账 ---------- */
 function initCats(){
   const box = document.getElementById('cats');
   box.innerHTML = CATS.map(c =>
     `<div class="cat ${c===cat?'on':''}" onclick="pickCat('${c}')">${c}</div>`).join('');
 }
-function pickCat(c){ cat = c; initCats(); }
+function pickCat(c){
+  if (c === cat) return;
+  cat = c; initCats();
+  if (navigator.vibrate) navigator.vibrate(8);
+}
 
 function addAcct(){
   const amt = parseFloat(document.getElementById('amt').value);
   if (!(amt > 0)) { document.getElementById('amt').focus(); return; }
   acct.unshift({ id: Date.now(), amount: +amt.toFixed(2), cat,
-                 note: document.getElementById('note').value.trim(),
-                 date: today() });
+                 note: document.getElementById('note').value.trim(), date: today() });
   store.set('acct', acct);
   document.getElementById('amt').value = '';
   document.getElementById('note').value = '';
+  if (navigator.vibrate) navigator.vibrate(12);
   renderAcct();
 }
 
-function delAcct(id){
-  if (!confirm('删除这条记录？')) return;
-  acct = acct.filter(a => a.id !== id); store.set('acct', acct); renderAcct();
+function delAcct(id, btn){
+  const li = btn.closest('li');
+  li.classList.add('out');
+  setTimeout(() => {
+    acct = acct.filter(a => a.id !== id);
+    store.set('acct', acct);
+    renderAcct();
+  }, 240);
 }
 
 function renderAcct(){
   const d0 = today(), m0 = d0.slice(0,7);
   const daySum = acct.filter(a => a.date === d0).reduce((s,a) => s + a.amount, 0);
   const monSum = acct.filter(a => a.date.startsWith(m0)).reduce((s,a) => s + a.amount, 0);
-  document.getElementById('sumDay').textContent = money(daySum);
-  document.getElementById('sumMon').textContent = money(monSum);
+  tween(document.getElementById('sumDay'), daySum);
+  tween(document.getElementById('sumMon'), monSum);
 
   const el = document.getElementById('acctList');
   if (!acct.length){ el.innerHTML = '<div class="empty">还没有记录</div>'; return; }
@@ -175,8 +297,9 @@ function renderAcct(){
         <div class="li-s">${a.date}</div>
       </div>
       <div class="amt out">-${money(a.amount)}</div>
-      <button class="del" onclick="delAcct(${a.id})">×</button>
+      <button class="del" onclick="delAcct(${a.id}, this)">×</button>
     </li>`).join('');
+  animateIn(el);
 }
 
 /* ---------- 待办 ---------- */
@@ -186,14 +309,23 @@ function addTodo(){
   todos.unshift({ id: Date.now(), text: v, done: false, ts: Date.now() });
   store.set('todos', todos);
   document.getElementById('task').value = '';
+  if (navigator.vibrate) navigator.vibrate(12);
   renderTodo();
 }
 function toggleTodo(id){
   const t = todos.find(x => x.id === id); if (!t) return;
-  t.done = !t.done; store.set('todos', todos); renderTodo();
+  t.done = !t.done; store.set('todos', todos);
+  if (navigator.vibrate) navigator.vibrate(8);
+  renderTodo();
 }
-function delTodo(id){
-  todos = todos.filter(x => x.id !== id); store.set('todos', todos); renderTodo();
+function delTodo(id, btn){
+  const li = btn.closest('li');
+  li.classList.add('out');
+  setTimeout(() => {
+    todos = todos.filter(x => x.id !== id);
+    store.set('todos', todos);
+    renderTodo();
+  }, 240);
 }
 function renderTodo(){
   const open = todos.filter(t => !t.done), done = todos.filter(t => t.done);
@@ -201,12 +333,12 @@ function renderTodo(){
     <li class="${t.done?'done':''}">
       <div class="chk ${t.done?'on':''}" onclick="toggleTodo(${t.id})">${t.done?'✓':''}</div>
       <div class="li-main"><div class="li-t">${esc(t.text)}</div></div>
-      <button class="del" onclick="delTodo(${t.id})">×</button>
+      <button class="del" onclick="delTodo(${t.id}, this)">×</button>
     </li>`;
-  document.getElementById('todoList').innerHTML =
-    open.length ? open.map(item).join('') : '<div class="empty">没有进行中的事</div>';
-  document.getElementById('doneList').innerHTML =
-    done.length ? done.map(item).join('') : '<div class="empty">还没有完成的</div>';
+  const ul1 = document.getElementById('todoList'), ul2 = document.getElementById('doneList');
+  ul1.innerHTML = open.length ? open.map(item).join('') : '<div class="empty">没有进行中的事</div>';
+  ul2.innerHTML = done.length ? done.map(item).join('') : '<div class="empty">还没有完成的</div>';
+  animateIn(ul1); animateIn(ul2);
 }
 
 /* ---------- 工具 ---------- */
@@ -238,14 +370,34 @@ function importData(){
   i.click();
 }
 
-/* ---------- 初始化 ---------- */
-document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
-  document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === t));
-  document.getElementById('acct').classList.toggle('hide', t.dataset.tab !== 'acct');
-  document.getElementById('todo').classList.toggle('hide', t.dataset.tab !== 'todo');
-});
+/* ---------- 页面转场 ---------- */
+function switchTab(next){
+  if (next === cur) return;
+  const from = document.getElementById(cur), to = document.getElementById(next);
+  document.documentElement.style.setProperty('--dir', next === 'todo' ? 1 : -1);
+
+  from.classList.add('leave');
+  setTimeout(() => {
+    from.classList.add('hide'); from.classList.remove('leave');
+    to.classList.remove('hide'); to.classList.add('enter');
+    void to.offsetWidth;
+    requestAnimationFrame(() => to.classList.remove('enter'));
+    if (next === 'acct') renderAcct(); else renderTodo();
+  }, 170);
+
+  document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x.dataset.tab === next));
+  cur = next;
+  if (navigator.vibrate) navigator.vibrate(8);
+}
+document.querySelectorAll('.tab').forEach(t => t.onclick = () => switchTab(t.dataset.tab));
+
 document.getElementById('amt').addEventListener('keydown', e => { if (e.key === 'Enter') addAcct() });
 document.getElementById('task').addEventListener('keydown', e => { if (e.key === 'Enter') addTodo() });
+
+document.querySelectorAll('.card').forEach(c => {
+  c.addEventListener('pointerenter', () => c.classList.add('lift'));
+  c.addEventListener('pointerleave', () => c.classList.remove('lift'));
+});
 
 initCats(); renderAcct(); renderTodo();
 </script>
