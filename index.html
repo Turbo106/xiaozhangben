@@ -6,20 +6,13 @@
 <meta name="theme-color" content="#08090d">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>小账本 · 待办</title>
+<title>小账本 · 待办 · 课表</title>
 <style>
   :root{
-    --bg:#08090d;
-    --text:#eef0f6;
-    --muted:#8a91a0;
-    --line:rgba(255,255,255,.08);
-    --line-strong:rgba(255,255,255,.14);
-    --accent:#7c8cff;
-    --accent2:#4dd8ff;
-    --danger:#ff6b81;
-    --ok:#37e0a0;
-    --ease:cubic-bezier(.22,.68,0,1);
-    --spring:cubic-bezier(.34,1.56,.64,1);
+    --bg:#08090d; --text:#eef0f6; --muted:#8a91a0;
+    --line:rgba(255,255,255,.08); --line-strong:rgba(255,255,255,.14);
+    --accent:#7c8cff; --accent2:#4dd8ff; --danger:#ff6b81; --ok:#37e0a0;
+    --ease:cubic-bezier(.22,.68,0,1); --spring:cubic-bezier(.34,1.56,.64,1);
     --dir:1;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
@@ -36,7 +29,6 @@
     max-width:680px;margin:0 auto;overflow-x:hidden;min-height:100vh;
   }
 
-  /* 标题 */
   h1{font-size:20px;margin:2px 0 16px;font-weight:700;letter-spacing:.4px;
     display:flex;flex-wrap:wrap;align-items:baseline}
   h1 span{display:inline-block;opacity:0;transform:translateY(10px) rotateX(-45deg);
@@ -45,22 +37,21 @@
     -webkit-background-clip:text;background-clip:text;color:transparent}
   @keyframes charIn{to{opacity:1;transform:none}}
 
-  /* 分段控件 */
   .tabs{position:relative;display:flex;background:rgba(255,255,255,.045);
     border:1px solid var(--line);border-radius:16px;padding:4px;margin-bottom:16px;
     backdrop-filter:blur(12px)}
-  .ind{position:absolute;top:4px;left:4px;width:calc(50% - 4px);height:calc(100% - 8px);
+  .ind{position:absolute;top:4px;left:4px;width:calc((100% - 8px)/3);height:calc(100% - 8px);
     border-radius:12px;background:linear-gradient(135deg,rgba(124,140,255,.95),rgba(77,216,255,.8));
     box-shadow:0 6px 22px rgba(124,140,255,.45);
     transition:transform .45s var(--spring)}
-  .ind.right{transform:translateX(100%)}
-  .tab{flex:1;padding:11px;text-align:center;font-size:15px;cursor:pointer;z-index:1;
+  .ind.pos-1{transform:translateX(100%)}
+  .ind.pos-2{transform:translateX(200%)}
+  .tab{flex:1;padding:11px 4px;text-align:center;font-size:14.5px;cursor:pointer;z-index:1;
     color:var(--muted);border-radius:12px;user-select:none;
     transition:color .3s var(--ease), transform .3s var(--spring)}
   .tab.on{color:#0a0b12;font-weight:700}
   .tab:active{transform:scale(.97)}
 
-  /* 玻璃卡片 */
   .card{background:linear-gradient(180deg,rgba(255,255,255,.065),rgba(255,255,255,.022));
     border:1px solid var(--line);border-radius:18px;padding:15px;margin-bottom:12px;
     backdrop-filter:blur(16px) saturate(150%);
@@ -70,35 +61,38 @@
     box-shadow:0 16px 44px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.1)}
 
   .row{display:flex;gap:9px;align-items:center}
-  input,button{font:inherit;color:inherit}
+  input,select,button{font:inherit;color:inherit}
 
-  /* 输入 */
   .field{flex:1;min-width:0;position:relative}
   .field::after{content:"";position:absolute;left:12px;right:12px;bottom:9px;height:2px;
     background:linear-gradient(90deg,var(--accent),var(--accent2));transform:scaleX(0);
     transform-origin:left;transition:transform .38s var(--ease);border-radius:2px}
   .field:focus-within::after{transform:scaleX(1)}
-  input[type=number],input[type=text]{width:100%;padding:13px;border-radius:12px;
-    border:1px solid var(--line);background:rgba(0,0,0,.28);outline:none;
-    transition:border-color .25s var(--ease), background .25s var(--ease), box-shadow .25s}
-  input:focus{border-color:rgba(124,140,255,.55);background:rgba(0,0,0,.42);
+  input[type=number],input[type=text],input[type=time],select{width:100%;padding:13px;
+    border-radius:12px;border:1px solid var(--line);background:rgba(0,0,0,.28);outline:none;
+    transition:border-color .25s var(--ease), background .25s var(--ease), box-shadow .25s;
+    -webkit-appearance:none;appearance:none}
+  input:focus,select:focus{border-color:rgba(124,140,255,.55);background:rgba(0,0,0,.42);
     box-shadow:0 0 0 3px rgba(124,140,255,.12)}
   input::placeholder{color:#5f6675}
   input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  input[type=time]{color-scheme:dark}
+  select{background-image:linear-gradient(45deg,transparent 50%,#8a91a0 50%),
+    linear-gradient(135deg,#8a91a0 50%,transparent 50%);
+    background-position:calc(100% - 18px) 22px,calc(100% - 13px) 22px;
+    background-size:5px 5px,5px 5px;background-repeat:no-repeat}
 
-  /* 按钮 */
   button{border:none;border-radius:12px;padding:13px 18px;
     background:linear-gradient(135deg,#7c8cff,#5f7dff 55%,#4dd8ff);
     color:#0a0b12;font-weight:700;cursor:pointer;white-space:nowrap;
     position:relative;overflow:hidden;
     box-shadow:0 6px 20px rgba(105,130,255,.35);
-    transition:transform .25s var(--spring), box-shadow .25s var(--ease), filter .2s}
+    transition:transform .25s var(--spring), box-shadow .25s var(--ease)}
   button:active{transform:scale(.94);box-shadow:0 3px 12px rgba(105,130,255,.45)}
   .ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.6);
     transform:scale(0);animation:rip .55s ease-out forwards;pointer-events:none}
   @keyframes rip{to{transform:scale(2.6);opacity:0}}
 
-  /* 分类胶囊 */
   .cats{display:flex;gap:8px;overflow-x:auto;padding:11px 0 3px;scrollbar-width:none}
   .cats::-webkit-scrollbar{display:none}
   .cat{padding:9px 15px;border-radius:22px;border:1px solid var(--line);
@@ -111,7 +105,6 @@
     box-shadow:0 5px 18px rgba(124,140,255,.4)}
   .cat:active{transform:scale(.94)}
 
-  /* 统计 */
   .sum{display:flex;gap:10px;margin-bottom:12px}
   .sum .card{flex:1;margin:0;padding:14px}
   .sum .k{font-size:11.5px;color:var(--muted);margin-bottom:6px;letter-spacing:.5px}
@@ -121,7 +114,6 @@
   .sum .v.flash{animation:flashIn .45s var(--spring)}
   @keyframes flashIn{40%{transform:scale(1.09);filter:brightness(1.5)}}
 
-  /* 列表 */
   ul{list-style:none;margin:0;padding:0}
   li{display:flex;align-items:center;gap:11px;padding:13px 2px;
     border-bottom:1px solid rgba(255,255,255,.055);overflow:hidden;
@@ -140,7 +132,6 @@
     transition:background-size .34s var(--ease), color .3s var(--ease)}
   .li-s{font-size:11.5px;color:#61697a;margin-top:3px}
   .amt{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;color:#ff8a9c}
-  .amt.out{color:#ff8a9c}
 
   .del{background:transparent;border:none;box-shadow:none;color:#5f6675;font-size:19px;
     padding:6px 9px;cursor:pointer;border-radius:9px;
@@ -152,7 +143,6 @@
     animation:fadeUp .4s var(--ease) both}
   @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
-  /* 勾选 */
   .chk{width:23px;height:23px;border-radius:8px;border:1.5px solid rgba(255,255,255,.18);
     flex:none;display:flex;align-items:center;justify-content:center;cursor:pointer;
     transition:background .25s var(--ease), border-color .25s var(--ease),
@@ -164,7 +154,6 @@
   .done .li-t{color:#5f6675;background-size:100% 1.5px}
   .done .amt{opacity:.5}
 
-  /* 底栏 */
   .bar{position:fixed;left:0;right:0;bottom:0;padding:12px 12px calc(env(safe-area-inset-bottom) + 12px);
     background:linear-gradient(to top,rgba(8,9,13,.96) 55%,transparent);
     display:flex;gap:9px;max-width:680px;margin:0 auto}
@@ -178,7 +167,44 @@
   .label::before{content:"";width:3px;height:11px;border-radius:2px;
     background:linear-gradient(180deg,var(--accent),var(--accent2))}
 
-  /* 页面转场 */
+  /* ——— 课表 ——— */
+  .daychips{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding:2px}
+  .daychips::-webkit-scrollbar{display:none}
+  .dchip{flex:none;width:44px;padding:9px 0;text-align:center;border-radius:13px;
+    border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--muted);
+    font-size:13px;cursor:pointer;position:relative;
+    transition:all .28s var(--ease), transform .3s var(--spring)}
+  .dchip .d{font-size:10px;opacity:.7;margin-top:2px}
+  .dchip.on{color:#0a0b12;border-color:transparent;
+    background:linear-gradient(135deg,#7c8cff,#4dd8ff);
+    box-shadow:0 6px 18px rgba(124,140,255,.4);transform:translateY(-2px)}
+  .dchip.today::after{content:"";position:absolute;bottom:4px;left:50%;transform:translateX(-50%);
+    width:4px;height:4px;border-radius:50%;background:var(--accent2)}
+  .dchip.on.today::after{background:#0a0b12}
+  .dchip:active{transform:scale(.94)}
+
+  .course{display:flex;gap:12px;align-items:flex-start;padding:13px 2px;
+    border-bottom:1px solid rgba(255,255,255,.055);
+    transition:opacity .22s var(--ease), transform .28s var(--ease),
+               max-height .3s, padding .3s, border-color .3s}
+  .course:last-child{border-bottom:none}
+  .course.now{position:relative}
+  .course.now::before{content:"";position:absolute;left:-15px;top:12px;bottom:12px;width:3px;
+    border-radius:3px;background:linear-gradient(180deg,var(--ok),var(--accent2));
+    box-shadow:0 0 12px rgba(55,224,160,.6)}
+  .ctime{flex:none;width:56px;font-variant-numeric:tabular-nums}
+  .ctime .b{font-size:14.5px;font-weight:700;color:#dfe4ff}
+  .ctime .e{font-size:11.5px;color:#61697a;margin-top:2px}
+  .cinfo{flex:1;min-width:0}
+  .cname{font-size:15px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .cplace{font-size:11.5px;color:#7a8292;margin-top:3px;overflow:hidden;
+    text-overflow:ellipsis;white-space:nowrap}
+  .nowtag{font-size:10px;color:#04231a;background:linear-gradient(135deg,#37e0a0,#25c9b0);
+    padding:2px 7px;border-radius:6px;margin-left:6px;font-weight:700;vertical-align:2px}
+
+  .formgrid{display:flex;gap:8px;margin-bottom:8px}
+  .formgrid .field{flex:1}
+
   .view{transition:opacity .2s var(--ease), transform .32s var(--ease)}
   .view.leave{opacity:0;transform:translateX(calc(var(--dir) * -24px)) scale(.99)}
   .view.enter{opacity:0;transform:translateX(calc(var(--dir) * 24px)) scale(.99)}
@@ -195,8 +221,9 @@
 
 <div class="tabs">
   <span class="ind"></span>
-  <div class="tab on" data-tab="acct">记账</div>
-  <div class="tab" data-tab="todo">待办</div>
+  <div class="tab on" data-tab="acct" data-i="0">记账</div>
+  <div class="tab" data-tab="todo" data-i="1">待办</div>
+  <div class="tab" data-tab="sched" data-i="2">课表</div>
 </div>
 
 <section id="acct" class="view">
@@ -239,6 +266,42 @@
   </div>
 </section>
 
+<section id="sched" class="view hide">
+  <div class="card">
+    <div class="daychips" id="dayChips"></div>
+  </div>
+
+  <div class="card">
+    <div class="label" id="dayLabel">当天课程</div>
+    <ul id="schedList"></ul>
+  </div>
+
+  <div class="card">
+    <div class="label">添加课程</div>
+    <div class="formgrid">
+      <div class="field"><input type="text" id="cName" placeholder="课程名，如和声学"></div>
+    </div>
+    <div class="formgrid">
+      <div class="field"><input type="text" id="cPlace" placeholder="教室，如音院楼 302"></div>
+    </div>
+    <div class="formgrid">
+      <select id="cDow" style="flex:1">
+        <option value="1">周一</option><option value="2">周二</option>
+        <option value="3">周三</option><option value="4">周四</option>
+        <option value="5">周五</option><option value="6">周六</option>
+        <option value="7">周日</option>
+      </select>
+    </div>
+    <div class="formgrid">
+      <div class="field"><input type="time" id="cStart" value="08:00"></div>
+      <div class="field"><input type="time" id="cEnd" value="09:40"></div>
+    </div>
+    <div class="row" style="margin-top:4px">
+      <button style="flex:1" onclick="addCourse()">加入课表</button>
+    </div>
+  </div>
+</section>
+
 <div class="bar">
   <button onclick="exportData()">导出备份</button>
   <button onclick="importData()">导入备份</button>
@@ -246,8 +309,11 @@
 
 <script>
 const CATS = ['餐饮','交通','购物','学习','音乐','娱乐','其他'];
+const DOW = {1:'周一',2:'周二',3:'周三',4:'周四',5:'周五',6:'周六',7:'周日'};
+const DOWS = ['一','二','三','四','五','六','日'];
 let cat = '餐饮';
 let cur = 'acct';
+let selDow = ((new Date().getDay() + 6) % 7) + 1;   // 今天（周一=1）
 
 const store = {
   get(k, d){ try { return JSON.parse(localStorage.getItem(k)) ?? d } catch(e){ return d } },
@@ -255,9 +321,12 @@ const store = {
 };
 let acct = store.get('acct', []);
 let todos = store.get('todos', []);
+let courses = store.get('courses', []);
 
 const today = () => new Date().toISOString().slice(0,10);
 const money = n => '¥' + (Math.round(n*100)/100).toLocaleString('zh-CN');
+const nowHM = () => { const d = new Date();
+  return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0'); };
 
 /* 标题逐字浮现 */
 (function animTitle(){
@@ -266,7 +335,7 @@ const money = n => '¥' + (Math.round(n*100)/100).toLocaleString('zh-CN');
   [...txt].forEach((ch, i) => {
     const s = document.createElement('span');
     s.textContent = ch === ' ' ? '\u00a0' : ch;
-    s.style.animationDelay = (i * 42) + 'ms';
+    s.style.animationDelay = (i * 40) + 'ms';
     t.appendChild(s);
   });
 })();
@@ -282,7 +351,6 @@ document.addEventListener('pointerdown', e => {
   b.appendChild(r); setTimeout(() => r.remove(), 600);
 });
 
-/* 数字滚动 */
 function tween(el, to){
   const from = parseFloat(el.dataset.v || 0);
   el.dataset.v = to;
@@ -296,7 +364,6 @@ function tween(el, to){
   })(t0);
 }
 
-/* 列表进入 */
 function animateIn(ul){
   [...ul.children].forEach((li, i) => {
     if (li.dataset.anim) return;
@@ -317,7 +384,6 @@ function pickCat(c){
   cat = c; initCats();
   if (navigator.vibrate) navigator.vibrate(8);
 }
-
 function addAcct(){
   const amt = parseFloat(document.getElementById('amt').value);
   if (!(amt > 0)) { document.getElementById('amt').focus(); return; }
@@ -329,17 +395,14 @@ function addAcct(){
   if (navigator.vibrate) navigator.vibrate(12);
   renderAcct();
 }
-
 function delAcct(id, btn){
   const li = btn.closest('li');
   li.classList.add('out');
   setTimeout(() => {
     acct = acct.filter(a => a.id !== id);
-    store.set('acct', acct);
-    renderAcct();
+    store.set('acct', acct); renderAcct();
   }, 240);
 }
-
 function renderAcct(){
   const d0 = today(), m0 = d0.slice(0,7);
   const daySum = acct.filter(a => a.date === d0).reduce((s,a) => s + a.amount, 0);
@@ -382,8 +445,7 @@ function delTodo(id, btn){
   li.classList.add('out');
   setTimeout(() => {
     todos = todos.filter(x => x.id !== id);
-    store.set('todos', todos);
-    renderTodo();
+    store.set('todos', todos); renderTodo();
   }, 240);
 }
 function renderTodo(){
@@ -400,11 +462,73 @@ function renderTodo(){
   animateIn(ul1); animateIn(ul2);
 }
 
+/* ---------- 课表 ---------- */
+function renderDays(){
+  const box = document.getElementById('dayChips');
+  const td = ((new Date().getDay() + 6) % 7) + 1;
+  box.innerHTML = DOWS.map((d, i) => {
+    const dow = i + 1;
+    return `<div class="dchip ${dow===selDow?'on':''} ${dow===td?'today':''}"
+      onclick="pickDay(${dow})">${d}<div class="d">${dow===td?'今天':''}</div></div>`;
+  }).join('');
+}
+function pickDay(dow){
+  selDow = dow; renderDays(); renderSched();
+  if (navigator.vibrate) navigator.vibrate(6);
+}
+function addCourse(){
+  const name = document.getElementById('cName').value.trim();
+  if (!name) { document.getElementById('cName').focus(); return; }
+  const start = document.getElementById('cStart').value || '08:00';
+  const end   = document.getElementById('cEnd').value || '09:40';
+  if (end <= start) { alert('结束时间要晚于开始时间'); return; }
+  courses.push({ id: Date.now(), name,
+    place: document.getElementById('cPlace').value.trim(),
+    dow: +document.getElementById('cDow').value, start, end });
+  store.set('courses', courses);
+  ['cName','cPlace'].forEach(id => document.getElementById(id).value = '');
+  selDow = +document.getElementById('cDow').value;
+  renderDays(); renderSched();
+  if (navigator.vibrate) navigator.vibrate(12);
+}
+function delCourse(id, btn){
+  const li = btn.closest('li');
+  li.classList.add('out');
+  setTimeout(() => {
+    courses = courses.filter(c => c.id !== id);
+    store.set('courses', courses); renderSched();
+  }, 240);
+}
+function renderSched(){
+  document.getElementById('dayLabel').textContent = DOW[selDow] + '的课';
+  const list = courses.filter(c => c.dow === selDow).sort((a,b) => a.start.localeCompare(b.start));
+  const el = document.getElementById('schedList');
+  if (!list.length){
+    el.innerHTML = '<div class="empty">这天没课，清闲</div>'; return;
+  }
+  const td = ((new Date().getDay() + 6) % 7) + 1;
+  const hm = nowHM();
+  el.innerHTML = list.map(c => {
+    const isNow = (td === c.dow) && hm >= c.start && hm < c.end;
+    return `
+    <li class="course ${isNow?'now':''}">
+      <div class="ctime"><div class="b">${c.start}</div><div class="e">${c.end}</div></div>
+      <div class="cinfo">
+        <div class="cname">${esc(c.name)}${isNow?'<span class="nowtag">进行中</span>':''}</div>
+        ${c.place ? `<div class="cplace">${esc(c.place)}</div>` : ''}
+      </div>
+      <button class="del" onclick="delCourse(${c.id}, this)">×</button>
+    </li>`;
+  }).join('');
+  animateIn(el);
+}
+
 /* ---------- 工具 ---------- */
-function esc(s){ return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])) }
+function esc(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])) }
 
 function exportData(){
-  const blob = new Blob([JSON.stringify({acct, todos, at: Date.now()}, null, 1)], {type:'application/json'});
+  const blob = new Blob([JSON.stringify({acct, todos, courses, at: Date.now()}, null, 1)],
+    {type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'backup-' + today() + '.json';
@@ -420,8 +544,9 @@ function importData(){
         const d = JSON.parse(r.result);
         if (Array.isArray(d.acct)) acct = d.acct;
         if (Array.isArray(d.todos)) todos = d.todos;
-        store.set('acct', acct); store.set('todos', todos);
-        renderAcct(); renderTodo(); alert('导入成功');
+        if (Array.isArray(d.courses)) courses = d.courses;
+        store.set('acct', acct); store.set('todos', todos); store.set('courses', courses);
+        renderAcct(); renderTodo(); renderSched(); alert('导入成功');
       } catch(e){ alert('文件格式不对'); }
     };
     r.readAsText(f);
@@ -429,12 +554,16 @@ function importData(){
   i.click();
 }
 
-/* ---------- 页面转场 ---------- */
+/* ---------- 转场 ---------- */
 function switchTab(next){
   if (next === cur) return;
   const from = document.getElementById(cur), to = document.getElementById(next);
-  document.documentElement.style.setProperty('--dir', next === 'todo' ? 1 : -1);
-  document.querySelector('.ind').classList.toggle('right', next === 'todo');
+  const order = {acct:0, todo:1, sched:2};
+  document.documentElement.style.setProperty('--dir',
+    order[next] > order[cur] ? 1 : -1);
+
+  const ind = document.querySelector('.ind');
+  ind.className = 'ind' + (order[next] ? ' pos-' + order[next] : '');
 
   from.classList.add('leave');
   setTimeout(() => {
@@ -442,7 +571,9 @@ function switchTab(next){
     to.classList.remove('hide'); to.classList.add('enter');
     void to.offsetWidth;
     requestAnimationFrame(() => to.classList.remove('enter'));
-    if (next === 'acct') renderAcct(); else renderTodo();
+    if (next === 'acct') renderAcct();
+    else if (next === 'todo') renderTodo();
+    else { renderDays(); renderSched(); }
   }, 170);
 
   document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x.dataset.tab === next));
@@ -453,13 +584,15 @@ document.querySelectorAll('.tab').forEach(t => t.onclick = () => switchTab(t.dat
 
 document.getElementById('amt').addEventListener('keydown', e => { if (e.key === 'Enter') addAcct() });
 document.getElementById('task').addEventListener('keydown', e => { if (e.key === 'Enter') addTodo() });
+document.getElementById('cName').addEventListener('keydown', e => { if (e.key === 'Enter') addCourse() });
+document.getElementById('cDow').value = selDow;
 
 document.querySelectorAll('.card').forEach(c => {
   c.addEventListener('pointerenter', () => c.classList.add('lift'));
   c.addEventListener('pointerleave', () => c.classList.remove('lift'));
 });
 
-initCats(); renderAcct(); renderTodo();
+initCats(); renderAcct(); renderTodo(); renderDays(); renderSched();
 </script>
 </body>
 </html>
